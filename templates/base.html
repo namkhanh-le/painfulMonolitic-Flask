@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GameHub</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: #f4f4f4;
+            color: #222;
+        }
+        nav {
+            background: #1a1a2e;
+            padding: 12px 24px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        nav a {
+            color: #e0e0e0;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        nav a:hover { color: #fff; }
+        nav .brand {
+            color: #fff;
+            font-weight: bold;
+            font-size: 18px;
+            margin-right: 20px;
+        }
+        .container {
+            max-width: 960px;
+            margin: 32px auto;
+            padding: 0 16px;
+        }
+        h1, h2 { margin-top: 0; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            margin-bottom: 24px;
+        }
+        th, td {
+            text-align: left;
+            padding: 10px 12px;
+            border-bottom: 1px solid #ddd;
+            font-size: 14px;
+        }
+        th { background: #eee; font-weight: bold; }
+        tr:hover { background: #fafafa; }
+        form.inline { display: inline; }
+        input[type="text"], input[type="email"], select, textarea {
+            padding: 6px 8px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 13px;
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 8px;
+        }
+        .btn {
+            padding: 6px 14px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .btn-primary { background: #1a1a2e; color: #fff; }
+        .btn-primary:hover { background: #2a2a4e; }
+        .btn-danger  { background: #c0392b; color: #fff; }
+        .btn-danger:hover  { background: #a93226; }
+        .btn-small { padding: 4px 10px; font-size: 12px; }
+        .card {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+        .card h2 { font-size: 16px; margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+        a { color: #1a1a2e; }
+    </style>
+</head>
+<body>
+    <nav>
+        <span class="brand">GameHub</span>
+        <a href="/view/users">Users</a>
+        <a href="/view/games">Games</a>
+        <a href="/view/activities">Activities</a>
+    </nav>
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

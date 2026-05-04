@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template, redirect, url_for
 from datetime import datetime, timezone
 from models import init_db, get_db
 
@@ -259,6 +259,200 @@ def add_friend():
     conn.commit()
     conn.close()
     return jsonify({"message": "Friends added"}), 201
+
+
+# =============================================================================
+# VIEWS — HTML pages served by the same app, same process, same restart
+# =============================================================================
+
+@app.route("/")
+def index():
+    return redirect(url_for("view_users"))
+
+
+@app.route("/view/users", methods=["GET"])
+def view_users():
+    conn = get_db()
+    users = conn.execute("SELECT * FROM users").fetchall()
+    conn.close()
+    return render_template("users.html", users=users)
+
+
+@app.route("/view/users", methods=["POST"])
+def view_create_user():
+    conn = get_db()
+    conn.execute(
+        "INSERT INTO users (username, email, password_hash, bio, created_at) VALUES (?,?,?,?,?)",
+        (request.form["username"], request.form["email"], "hashed", request.form.get("bio", ""), now())
+    )
+    conn.commit()
+    conn.close()
+    return redirect(url_for("view_users"))
+
+
+@app.route("/view/users/<int:user_id>", methods=["GET"])
+def view_user_detail(user_id):
+    conn = get_db()
+    user = conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+    if not user:
+        conn.close()
+        return "User not found", 404
+    games = conn.execute("""
+        SELECT g.*, ug.hours_played FROM games g
+        JOIN user_games ug ON g.id = ug.game_id
+        WHERE ug.user_id = ?
+    """, (user_id,)).fetchall()
+    activities = conn.execute("""
+        SELECT a.*, g.title as game_title FROM activities a
+        JOIN games g ON a.game_id = g.id
+        WHERE a.user_id = ? ORDER BY a.created_at DESC
+    """, (user_id,)).fetchall()
+    friends = conn.execute("""
+        SELECT u.* FROM users u
+        JOIN friends f ON u.id = f.friend_id
+        WHERE f.user_id = ?
+    """, (user_id,)).fetchall()
+    all_games = conn.execute("SELECT * FROM games").fetchall()
+    conn.close()
+    return render_template("user_detail.html", user=user, games=games,
+                           activities=activities, friends=friends, all_games=all_games)
+
+
+@app.route("/view/users/<int:user_id>/update", methods=["POST"])
+def view_update_user(user_id):
+    conn = get_db()
+    # Note: username is used as identifier in activity messages and notifications.
+    # Changing it here does NOT update those references — they're stored as plain text.
+    conn.execute(
+        "UPDATE users SET username = ?, email = ?, bio = ? WHERE id = ?",
+        (request.form["username"], request.form["email"], request.form.get("bio", ""), user_id)
+    )
+    conn.commit()
+    conn.close()
+    return redirect(url_for("view_user_detail", user_id=user_id))
+
+
+@app.route("/view/users/<int:user_id>/delete", methods=["POST"])
+def view_delete_user(user_id):
+    conn = get_db()
+    # Same ordering problem as the API — remove all FK references manually first
+    conn.execute("DELETE FROM notifications WHERE user_id = ?", (user_id,))
+    conn.execute("DELETE FROM notifications WHERE triggered_by = ?", (user_id,))
+    conn.execute("DELETE FROM activities WHERE user_id = ?", (user_id,))
+    conn.execute("DELETE FROM user_games WHERE user_id = ?", (user_id,))
+    conn.execute("DELETE FROM friends WHERE user_id = ? OR friend_id = ?", (user_id, user_id))
+    conn.execute("DELETE FROM users WHERE id = ?", (user_id,))
+    conn.commit()
+    conn.close()
+    return redirect(url_for("view_users"))
+
+
+@app.route("/view/games", methods=["GET"])
+def view_games():
+    conn = get_db()
+    games = conn.execute("SELECT * FROM games").fetchall()
+    conn.close()
+    return render_template("games.html", games=games)
+
+
+@app.route("/view/games", methods=["POST"])
+def view_create_game():
+    conn = get_db()
+    conn.execute(
+        "INSERT INTO games (title, genre, description, created_at) VALUES (?,?,?,?)",
+        (request.form["title"], request.form["genre"], request.form.get("description", ""), now())
+    )
+    conn.commit()
+    conn.close()
+    return redirect(url_for("view_games"))
+
+
+@app.route("/view/games/<int:game_id>/update", methods=["POST"])
+def view_update_game(game_id):
+    # A one-line fix to a game title still requires restarting the whole app to ship.
+    # While it's down: users can't log in, activities stop, notifications stop.
+    conn = get_db()
+    conn.execute(
+        "UPDATE games SET title = ?, genre = ?, description = ? WHERE id = ?",
+        (request.form["title"], request.form["genre"], request.form.get("description", ""), game_id)
+    )
+    conn.commit()
+    conn.close()
+    return redirect(url_for("view_games"))
+
+
+@app.route("/view/activities", methods=["GET"])
+def view_activities():
+    conn = get_db()
+    rows = conn.execute("""
+        SELECT a.*, u.username, g.title as game_title
+        FROM activities a
+        JOIN users u ON a.user_id = u.id
+        JOIN games g ON a.game_id = g.id
+        ORDER BY a.created_at DESC
+    """).fetchall()
+    users = conn.execute("SELECT * FROM users").fetchall()
+    games = conn.execute("SELECT * FROM games").fetchall()
+    conn.close()
+    return render_template("activities.html", activities=rows, users=users, games=games)
+
+
+@app.route("/view/activities", methods=["POST"])
+def view_create_activity():
+    conn = get_db()
+    user_id = int(request.form["user_id"])
+    game_id = int(request.form["game_id"])
+    action  = request.form["action"]
+
+    conn.execute(
+        "INSERT INTO activities (user_id, game_id, action, created_at) VALUES (?,?,?,?)",
+        (user_id, game_id, action, now())
+    )
+    conn.commit()
+
+    activity = conn.execute(
+        "SELECT * FROM activities WHERE user_id = ? ORDER BY id DESC LIMIT 1", (user_id,)
+    ).fetchone()
+    actor = conn.execute("SELECT username FROM users WHERE id = ?", (user_id,)).fetchone()
+    game  = conn.execute("SELECT title FROM games WHERE id = ?", (game_id,)).fetchone()
+
+    # Notification logic lives here — because where else would it go?
+    friends = conn.execute("SELECT friend_id FROM friends WHERE user_id = ?", (user_id,)).fetchall()
+    for f in friends:
+        msg = f"{actor['username']} just {action} playing {game['title']}!"
+        conn.execute(
+            "INSERT INTO notifications (user_id, triggered_by, message, activity_id, created_at) VALUES (?,?,?,?,?)",
+            (f["friend_id"], user_id, msg, activity["id"], now())
+        )
+
+    conn.commit()
+    conn.close()
+    return redirect(url_for("view_activities"))
+
+
+@app.route("/view/notifications/<int:user_id>", methods=["GET"])
+def view_notifications(user_id):
+    conn = get_db()
+    user = conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+    rows = conn.execute("""
+        SELECT n.*, u.username as triggered_by_username
+        FROM notifications n
+        JOIN users u ON n.triggered_by = u.id
+        WHERE n.user_id = ?
+        ORDER BY n.created_at DESC
+    """, (user_id,)).fetchall()
+    conn.close()
+    return render_template("notifications.html", notifications=rows, user=user)
+
+
+@app.route("/view/notifications/<int:notif_id>/delete", methods=["POST"])
+def view_delete_notification(notif_id):
+    user_id = request.form["user_id"]
+    conn = get_db()
+    conn.execute("DELETE FROM notifications WHERE id = ?", (notif_id,))
+    conn.commit()
+    conn.close()
+    return redirect(url_for("view_notifications", user_id=user_id))
 
 
 # =============================================================================
