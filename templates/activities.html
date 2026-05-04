@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h1>Activity Feed</h1>
+
+<table>
+    <thead>
+        <tr>
+            <th>User</th>
+            <th>Game</th>
+            <th>Action</th>
+            <th>Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for a in activities %}
+        <tr>
+            <td><a href="/view/users/{{ a.user_id }}">{{ a.username }}</a></td>
+            <td>{{ a.game_title }}</td>
+            <td>{{ a.action }}</td>
+            <td>{{ a.created_at }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4" style="color:#999;">No activities yet.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class="card">
+    <h2>Log an activity</h2>
+    <form action="/view/activities" method="POST">
+        <select name="user_id" required>
+            <option value="" disabled selected>Select a user</option>
+            {% for u in users %}
+            <option value="{{ u.id }}">{{ u.username }}</option>
+            {% endfor %}
+        </select>
+        <select name="game_id" required>
+            <option value="" disabled selected>Select a game</option>
+            {% for g in games %}
+            <option value="{{ g.id }}">{{ g.title }}</option>
+            {% endfor %}
+        </select>
+        <select name="action" required>
+            <option value="" disabled selected>Select an action</option>
+            <option value="started">started</option>
+            <option value="completed">completed</option>
+            <option value="replaying">replaying</option>
+            <option value="dropped">dropped</option>
+        </select>
+        <button class="btn btn-primary" type="submit">Log activity</button>
+    </form>
+</div>
+
+{% endblock %}

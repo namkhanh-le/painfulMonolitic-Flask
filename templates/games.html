@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h1>Games</h1>
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Genre</th>
+            <th>Description</th>
+            <th>Created</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for game in games %}
+        <tr>
+            <td>{{ game.id }}</td>
+            <td>{{ game.title }}</td>
+            <td>{{ game.genre }}</td>
+            <td>{{ game.description }}</td>
+            <td>{{ game.created_at }}</td>
+            <td>
+                <button class="btn btn-small btn-primary"
+                        onclick="toggleEdit({{ game.id }})">Edit</button>
+            </td>
+        </tr>
+        <!-- Inline edit row — hidden by default -->
+        <tr id="edit-{{ game.id }}" style="display:none; background:#fffbe6;">
+            <td colspan="6">
+                <form action="/view/games/{{ game.id }}/update" method="POST"
+                      style="display:flex; gap:8px; align-items:center; padding: 8px 0;">
+                    <input type="text" name="title"       value="{{ game.title }}"       style="width:200px;" required>
+                    <input type="text" name="genre"       value="{{ game.genre }}"       style="width:120px;" required>
+                    <input type="text" name="description" value="{{ game.description }}" style="width:280px;">
+                    <button class="btn btn-primary btn-small" type="submit">Save</button>
+                    <button class="btn btn-small" type="button"
+                            onclick="toggleEdit({{ game.id }})"
+                            style="background:#ccc;">Cancel</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class="card">
+    <h2>Add a new game</h2>
+    <form action="/view/games" method="POST">
+        <input type="text" name="title"       placeholder="Title"            required>
+        <input type="text" name="genre"       placeholder="Genre"            required>
+        <input type="text" name="description" placeholder="Description (optional)">
+        <button class="btn btn-primary" type="submit">Add game</button>
+    </form>
+</div>
+
+<script>
+    function toggleEdit(id) {
+        const row = document.getElementById("edit-" + id);
+        row.style.display = row.style.display === "none" ? "table-row" : "none";
+    }
+</script>
+
+{% endblock %}

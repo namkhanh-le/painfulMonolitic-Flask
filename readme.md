@@ -6,8 +6,6 @@ It's a social platform for gamers. Users can track what they're playing, follow 
 log activities, and receive notifications. It was built fast, it works, and nobody has
 touched it in two years. Your job is to make a few changes.
 
-The app is running on `http://localhost:5000`.
-
 ---
 
 ## Setup
@@ -18,29 +16,36 @@ python seed.py
 python app.py
 ```
 
+The app runs on `http://localhost:5000`.
+
 > If you need to reset the database, delete `gamehub.db` and run `python seed.py` again.
 
 ---
 
-## Available endpoints
+## What's in the app
 
-| Method | Route                        | Description                        |
-|--------|------------------------------|------------------------------------|
-| GET    | /users                       | List all users                     |
-| GET    | /users/\<id\>                | Get a user                         |
-| POST   | /users                       | Create a user                      |
-| PUT    | /users/\<id\>                | Update a user                      |
-| DELETE | /users/\<id\>                | Delete a user                      |
-| GET    | /games                       | List all games                     |
-| GET    | /games/\<id\>                | Get a game                         |
-| POST   | /games                       | Create a game                      |
-| PUT    | /games/\<id\>                | Update a game                      |
-| GET    | /activities                  | List all activities                |
-| POST   | /activities                  | Log an activity                    |
-| GET    | /notifications/\<user_id\>   | Get notifications for a user       |
-| DELETE | /notifications/\<id\>        | Delete a notification              |
-| GET    | /friends/\<user_id\>         | Get friends of a user              |
-| POST   | /friends                     | Add a friendship                   |
+A web UI is available at `http://localhost:5000` — use it to browse users, games,
+activities, and notifications.
+
+The same app also exposes a JSON API if you prefer to use curl or Postman:
+
+| Method | Route                      | Description                   |
+|--------|----------------------------|-------------------------------|
+| GET    | /users                     | List all users                |
+| GET    | /users/\<id\>              | Get a user                    |
+| POST   | /users                     | Create a user                 |
+| PUT    | /users/\<id\>              | Update a user                 |
+| DELETE | /users/\<id\>              | Delete a user                 |
+| GET    | /games                     | List all games                |
+| GET    | /games/\<id\>              | Get a game                    |
+| POST   | /games                     | Create a game                 |
+| PUT    | /games/\<id\>              | Update a game                 |
+| GET    | /activities                | List all activities           |
+| POST   | /activities                | Log an activity               |
+| GET    | /notifications/\<user_id\> | Get notifications for a user  |
+| DELETE | /notifications/\<id\>      | Delete a notification         |
+| GET    | /friends/\<user_id\>       | Get friends of a user         |
+| POST   | /friends                   | Add a friendship              |
 
 ---
 

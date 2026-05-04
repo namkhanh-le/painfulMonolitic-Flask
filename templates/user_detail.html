@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div style="display: flex; justify-content: space-between; align-items: flex-start;">
+    <h1>{{ user.username }}</h1>
+    <form class="inline" action="/view/users/{{ user.id }}/delete" method="POST"
+          onsubmit="return confirm('Delete {{ user.username }}? This will remove all their data.')">
+        <button class="btn btn-danger" type="submit">Delete user</button>
+    </form>
+</div>
+
+<p style="color: #666; font-size: 13px;">{{ user.email }} — joined {{ user.created_at }}</p>
+
+<!-- Edit form -->
+<div class="card">
+    <h2>Edit profile</h2>
+    <form action="/view/users/{{ user.id }}/update" method="POST">
+        <input type="text"  name="username" value="{{ user.username }}" required>
+        <input type="email" name="email"    value="{{ user.email }}"    required>
+        <input type="text"  name="bio"      value="{{ user.bio }}">
+        <button class="btn btn-primary" type="submit">Save changes</button>
+    </form>
+</div>
+
+<!-- Games -->
+<div class="card">
+    <h2>Games ({{ games | length }})</h2>
+    {% if games %}
+    <table>
+        <thead>
+            <tr><th>Title</th><th>Genre</th><th>Hours played</th></tr>
+        </thead>
+        <tbody>
+            {% for g in games %}
+            <tr>
+                <td>{{ g.title }}</td>
+                <td>{{ g.genre }}</td>
+                <td>{{ g.hours_played }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color: #999;">No games yet.</p>
+    {% endif %}
+</div>
+
+<!-- Recent activity -->
+<div class="card">
+    <h2>Recent activity</h2>
+    {% if activities %}
+    <table>
+        <thead>
+            <tr><th>Game</th><th>Action</th><th>Date</th></tr>
+        </thead>
+        <tbody>
+            {% for a in activities %}
+            <tr>
+                <td>{{ a.game_title }}</td>
+                <td>{{ a.action }}</td>
+                <td>{{ a.created_at }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color: #999;">No activity yet.</p>
+    {% endif %}
+</div>
+
+<!-- Friends -->
+<div class="card">
+    <h2>Friends ({{ friends | length }})</h2>
+    {% if friends %}
+    <table>
+        <thead>
+            <tr><th>Username</th><th>Email</th><th>Notifications</th></tr>
+        </thead>
+        <tbody>
+            {% for f in friends %}
+            <tr>
+                <td><a href="/view/users/{{ f.id }}">{{ f.username }}</a></td>
+                <td>{{ f.email }}</td>
+                <td><a href="/view/notifications/{{ f.id }}">view</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color: #999;">No friends yet.</p>
+    {% endif %}
+</div>
+
+<!-- Notifications link -->
+<p><a href="/view/notifications/{{ user.id }}">View {{ user.username }}'s notifications →</a></p>
+
+{% endblock %}
