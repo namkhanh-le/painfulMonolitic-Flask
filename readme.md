@@ -1,27 +1,84 @@
-## TO DO LIST:
+# GameHub — Legacy Backend
 
-- 5 things to do here (should be painful and difficult to handle)
+You've just joined a team. This is the codebase they left you.
 
-## The repo is a monolithic app:
+It's a social platform for gamers. Users can track what they're playing, follow friends,
+log activities, and receive notifications. It was built fast, it works, and nobody has
+touched it in two years. Your job is to make a few changes.
 
-- Flask + SQLite is the right call. Zero setup friction — students just pip install flask and run it. No Docker, no config.
-- Pre-seeded data is essential. Students shouldn't have to populate it — they should immediately start hitting walls. Seed it with realistic interconnected data (users who have games, activities, notifications, friends).
-- Keep it under 400 lines total. One app.py, one models.py or just raw SQL, one seed.py. The messiness should be architectural, not syntactic.
-- The README is the exercise. A short list of tasks: "do these 5 things." No hints. Let them discover the pain themselves.
-
-## Set up:
-
-- pip install flask and run it
-- pip install -r requirements.txt
-
-## Proposed Structure
-
-painfulMonolitic/
-├── app.py # Everything in one file: routes, logic, DB queries
-├── models.py # Raw SQLite schema — one big shared DB, FK constraints everywhere
-├── seed.py # Pre-fills DB with realistic interconnected data
-├── requirements.txt
-├── README.md # THE EXERCISE — 5 tasks, no hints
-└── .gitignore
+The app is running on `http://localhost:5000`.
 
 ---
+
+## Setup
+
+```bash
+pip install -r requirements.txt
+python seed.py
+python app.py
+```
+
+> If you need to reset the database, delete `gamehub.db` and run `python seed.py` again.
+
+---
+
+## Available endpoints
+
+| Method | Route                        | Description                        |
+|--------|------------------------------|------------------------------------|
+| GET    | /users                       | List all users                     |
+| GET    | /users/\<id\>                | Get a user                         |
+| POST   | /users                       | Create a user                      |
+| PUT    | /users/\<id\>                | Update a user                      |
+| DELETE | /users/\<id\>                | Delete a user                      |
+| GET    | /games                       | List all games                     |
+| GET    | /games/\<id\>                | Get a game                         |
+| POST   | /games                       | Create a game                      |
+| PUT    | /games/\<id\>                | Update a game                      |
+| GET    | /activities                  | List all activities                |
+| POST   | /activities                  | Log an activity                    |
+| GET    | /notifications/\<user_id\>   | Get notifications for a user       |
+| DELETE | /notifications/\<id\>        | Delete a notification              |
+| GET    | /friends/\<user_id\>         | Get friends of a user              |
+| POST   | /friends                     | Add a friendship                   |
+
+---
+
+## Your tasks
+
+### Task 1 — Delete the user `alex_g`
+
+He left the platform. Remove him from the system entirely.
+He should no longer appear anywhere in the app.
+
+---
+
+### Task 2 — Rename `username` to `display_name`
+
+The product team decided the field `username` is confusing to end users.
+They want it renamed to `display_name` everywhere.
+
+---
+
+### Task 3 — Add an opt-out privacy flag
+
+Users should be able to opt out of activity tracking.
+If a user has opted out, posting to `/activities` should have no effect for them.
+
+---
+
+### Task 4 — Make notifications optional
+
+The notification system is causing performance issues under load.
+Disable it without affecting any other part of the app.
+
+---
+
+### Task 5 — Fix a game title
+
+The game `Disco Elysium` should be listed as `Disco Elysium: The Final Cut`.
+It's a simple fix — ship it as fast as you can.
+
+---
+
+Good luck.

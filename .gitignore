@@ -1,2 +1,4 @@
 PLAN.md
 
+*.db
+*.db-journal
